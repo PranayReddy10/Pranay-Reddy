@@ -1,0 +1,23 @@
+{
+    "name": "DevLedger — work & finance tracker",
+    "short_name": "DevLedger",
+    "description": "Private tracker for projects, clients, domains, hosting, ad revenue and spending.",
+    "id": "/",
+    "start_url": "/?source=pwa",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#151823",
+    "theme_color": "#151823",
+    "categories": ["finance", "business", "productivity"],
+    "icons": [
+        { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ],
+    "shortcuts": [
+        { "name": "Add expense", "url": "/transactions/create?type=expense", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+        { "name": "Add income", "url": "/transactions/create?type=income", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+        { "name": "Renewals & dues", "url": "/renewals", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+    ]
+}
