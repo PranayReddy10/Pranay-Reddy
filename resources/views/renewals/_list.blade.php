@@ -1,4 +1,4 @@
-@php $icons = ['domain' => 'globe', 'hosting' => 'server', 'billing' => 'folder']; @endphp
+@php $icons = ['domain' => 'globe', 'hosting' => 'server', 'billing' => 'folder', 'invoice' => 'receipt']; @endphp
 <ul class="list">
     @forelse ($items as $item)
         <li>

@@ -5,9 +5,13 @@ namespace Database\Seeders;
 use App\Models\Account;
 use App\Models\Client;
 use App\Models\Domain;
+use App\Models\Invoice;
 use App\Models\Partner;
+use App\Models\PersonalBudget;
+use App\Models\PersonalExpense;
 use App\Models\Project;
 use App\Models\Server;
+use App\Models\Setting;
 use App\Models\Transaction;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -88,5 +92,53 @@ class DemoSeeder extends Seeder
         Transaction::create(['date' => $today->copy()->subMonths(11), 'type' => 'income', 'category' => 'client_payment', 'amount' => 6000, 'project_id' => $boutique->id, 'client_id' => $anita->id, 'description' => 'Boutique · yearly hosting & maintenance']);
         Transaction::create(['date' => $today->copy()->subMonths(2), 'type' => 'expense', 'category' => 'ads_spend', 'amount' => 2500, 'project_id' => $tools->id, 'description' => 'Facebook promotion']);
         Transaction::create(['date' => $today->copy()->subMonths(5), 'type' => 'income', 'category' => 'marketing', 'amount' => 7000, 'client_id' => $kiran->id, 'description' => 'Google Business profile + SEO setup']);
+
+        // Business profile for bills.
+        Setting::put([
+            'business_name' => 'PR Web Studio',
+            'owner_name' => 'Pranay Reddy',
+            'phone' => '+91 90000 00000',
+            'email' => 'hello@example.com',
+            'address' => 'Hyderabad, Telangana',
+            'upi_id' => 'pranay@upi',
+            'invoice_prefix' => 'PRW',
+            'invoice_terms' => "Payment due within 7 days.\nDomain & hosting renewals are billed separately.",
+        ]);
+
+        // Rao Constructions: advance paid earlier, final bill issued with balance outstanding.
+        $rao->update(['build_fee' => 30000]);
+        $raoAdvance = Transaction::where('project_id', $rao->id)->where('category', 'build_fee')->first();
+        $final = Invoice::create(['project_id' => $rao->id, 'client_id' => $kiran->id, 'title' => 'Final bill · Rao Constructions website', 'issue_date' => $today->copy()->subDays(12), 'due_date' => $today->copy()->subDays(2), 'notes' => 'Thank you for choosing PR Web Studio.']);
+        $final->items()->createMany([
+            ['description' => 'Website design & development (8 pages)', 'quantity' => 1, 'rate' => 26000, 'position' => 0],
+            ['description' => 'Google Business profile setup', 'quantity' => 1, 'rate' => 2500, 'position' => 1],
+            ['description' => 'Logo refresh', 'quantity' => 1, 'rate' => 1500, 'position' => 2],
+        ]);
+        $raoAdvance->update(['invoice_id' => $final->id, 'description' => 'Advance for website']);
+
+        // Sai Dental: fully paid bill.
+        $paid = Invoice::create(['project_id' => $dental->id, 'client_id' => $ravi->id, 'title' => 'Sai Dental website', 'issue_date' => $today->copy()->subMonths(10), 'due_date' => $today->copy()->subMonths(10)->addDays(7)]);
+        $paid->items()->create(['description' => 'Website design & development', 'quantity' => 1, 'rate' => 15000, 'position' => 0]);
+        Transaction::where('project_id', $dental->id)->where('category', 'build_fee')->update(['invoice_id' => $paid->id]);
+
+        // Personal spending.
+        foreach (['food' => 8000, 'rent' => 12000, 'travel' => 3000, 'entertainment' => 1500, 'shopping' => 3000] as $cat => $limit) {
+            PersonalBudget::create(['category' => $cat, 'monthly_limit' => $limit]);
+        }
+        $personal = [
+            ['rent', 12000, 'House rent', 'Owner'], ['food', 2400, 'Monthly groceries', 'D-Mart'], ['food', 650, 'Vegetables', null],
+            ['dining', 900, 'Dinner with friends', 'Paradise'], ['travel', 1800, 'Petrol', 'HP'], ['mobile', 599, 'Jio recharge', 'Jio'],
+            ['entertainment', 649, 'Netflix + Spotify', null], ['shopping', 3500, 'Shoes', 'Myntra'], ['bills', 1200, 'Electricity', 'TSSPDCL'],
+            ['family', 5000, 'Sent home', 'Amma'], ['health', 450, 'Medicines', 'Apollo'],
+        ];
+        for ($m = 5; $m >= 0; $m--) {
+            foreach ($personal as $i => [$cat, $amount, $note, $to]) {
+                $date = $today->copy()->subMonthsNoOverflow($m)->startOfMonth()->addDays(($i * 3) % 27);
+                if ($date->gt($today)) {
+                    continue;
+                }
+                PersonalExpense::create(['date' => $date, 'category' => $cat, 'amount' => $amount + (($m * 97 + $i * 31) % 400), 'description' => $note, 'paid_to' => $to, 'payment_method' => $cat === 'rent' ? 'Bank transfer' : 'UPI']);
+            }
+        }
     }
 }

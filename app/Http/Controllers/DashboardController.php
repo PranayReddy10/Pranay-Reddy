@@ -24,6 +24,8 @@ class DashboardController extends Controller
             'series' => $finance->monthly($today->copy()->subMonths(11)->startOfMonth(), $today),
             'upcoming' => $finance->upcoming(config('ledger.due_soon_days')),
             'recurring' => $finance->recurring(),
+            'outstanding' => $finance->outstanding(),
+            'personal' => $finance->personalSpending($today->copy()->startOfMonth(), $today->copy()->endOfMonth()),
             'counts' => [
                 'projects' => Project::active()->count(),
                 'domains' => Domain::active()->count(),

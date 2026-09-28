@@ -12,6 +12,15 @@ It keeps everything in one place:
 - **Hosting / servers**: each server's account, billing cycle, cost and next due date.
 - **Transactions**: every rupee in or out, linked to a project, client, account, domain, server or partner. You can export them to CSV.
 - **Renewals & dues**: domain expiries, hosting bills and client billing on one timeline. One tap marks an item paid, renewed or received. That books the transaction and moves the due date forward.
+- **Bills (invoices)**: itemised bills per project, with discount and optional GST/tax. The app shows what's billed, what the client paid and the balance, with Paid, Part-paid and Overdue status.
+  - **Final bill** on a project pre-fills the agreed amount. Advances you already recorded can be linked to it, so the bill shows them as paid.
+  - Record part payments as they come in.
+  - **Share**: a secret link the client opens without logging in, sent by WhatsApp, email, copy link or the phone's share sheet. You can reset the link at any time.
+  - **PDF**: print or save any bill as an A4 PDF. Bills include a UPI QR code and a "Pay via UPI" button when your UPI ID is set.
+  - Your business name, contact details, UPI ID, bank details, GSTIN and bill-number prefix are set under **Settings**.
+- **Personal spending**: day-to-day expenses (food, rent, travel, EMI…), kept completely separate from the business books.
+  - Monthly budgets per category.
+  - Month-by-month view with what you've spent against what work earned, plus how much you saved.
 - **Spending analysis**: month-by-month income against spending, spending and income by category, profit per project, spending per account, a year-on-year comparison and your yearly recurring run-rate.
 
 How the money is counted:

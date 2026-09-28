@@ -46,6 +46,29 @@ class Project extends Model
         return $this->hasMany(Transaction::class);
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class)->latest('issue_date');
+    }
+
+    /**
+     * Money owed by the client on this project (ad revenue excluded).
+     *
+     * @return array{quoted:float,billed:float,received:float,balance:float}
+     */
+    public function billingSummary(): array
+    {
+        $billed = $this->invoices()->open()->with(['items'])->get()->sum(fn (Invoice $i) => $i->total());
+        $received = (float) $this->transactions()->where('type', 'income')->where('category', '!=', 'ad_revenue')->sum('amount');
+
+        return [
+            'quoted' => (float) $this->build_fee,
+            'billed' => round($billed, 2),
+            'received' => round($received, 2),
+            'balance' => round(max($billed - $received, 0), 2),
+        ];
+    }
+
     public function scopeActive(Builder $query): void
     {
         $query->where('status', 'active');

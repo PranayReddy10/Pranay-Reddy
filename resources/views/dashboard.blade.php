@@ -2,6 +2,7 @@
     <x-slot:actions>
         <a class="btn btn-in" href="{{ route('transactions.create', ['type' => 'income']) }}"><x-icon name="plus"/> Income</a>
         <a class="btn btn-out" href="{{ route('transactions.create', ['type' => 'expense']) }}"><x-icon name="plus"/> Expense</a>
+        <a class="btn" href="{{ route('personal.create') }}"><x-icon name="wallet"/> Personal</a>
     </x-slot:actions>
 
     <div class="grid grid-4">
@@ -9,8 +10,8 @@
                 :hint="'In '.money($month['my_income']).' · Out '.money($month['spending'])"/>
         <x-stat label="Net this year" :value="money($year['net'])" :tone="$year['net'] >= 0 ? 'in' : 'out'"
                 :hint="'In '.money($year['my_income']).' · Out '.money($year['spending'])"/>
-        <x-stat label="Ad revenue this year" :value="money($year['ad_revenue'])"
-                :hint="$year['partner_share'] > 0 ? 'Partner share '.money($year['partner_share']) : 'All yours'"/>
+        <x-stat label="Clients owe (bills)" :value="money($outstanding)" :tone="$outstanding > 0 ? 'out' : null"
+                :hint="'Ads this year '.money($year['ad_revenue'])"/>
         <x-stat label="Recurring run-rate / yr" :value="money($recurring['net'])" :tone="$recurring['net'] >= 0 ? 'in' : 'out'"
                 :hint="'Billing '.money($recurring['billing']).' − hosting & domains '.money($recurring['hosting'] + $recurring['domains'])"/>
     </div>
@@ -47,6 +48,8 @@
                     <dt>Client billing / yr</dt><dd class="num in">{{ money($recurring['billing']) }}</dd>
                     <dt>Hosting / yr</dt><dd class="num out">{{ money($recurring['hosting']) }}</dd>
                     <dt>Domains / yr</dt><dd class="num out">{{ money($recurring['domains']) }}</dd>
+                    <dt>Personal spent (month)</dt><dd class="num out"><a href="{{ route('personal.index') }}">{{ money($personal) }}</a></dd>
+                    <dt>Saved this month</dt><dd class="num {{ $month['net'] - $personal >= 0 ? 'in' : 'out' }}">{{ money($month['net'] - $personal) }}</dd>
                     <dt>All-time net</dt><dd class="num {{ $allTime['net'] >= 0 ? 'in' : 'out' }}">{{ money($allTime['net']) }}</dd>
                 </dl>
             </div>

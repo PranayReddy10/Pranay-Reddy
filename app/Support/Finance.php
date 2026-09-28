@@ -4,6 +4,8 @@ namespace App\Support;
 
 use App\Models\Account;
 use App\Models\Domain;
+use App\Models\Invoice;
+use App\Models\PersonalExpense;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\Transaction;
@@ -137,7 +139,34 @@ class Finance
                 'action_label' => 'Received',
             ]));
 
+        Invoice::open()->with(['items', 'payments', 'client'])
+            ->whereNotNull('due_date')->whereDate('due_date', '<=', $until)
+            ->get()
+            ->filter(fn (Invoice $i) => $i->balance() > 0)
+            ->each(fn (Invoice $i) => $items->push([
+                'kind' => 'invoice',
+                'title' => "Bill {$i->number}",
+                'subtitle' => ($i->billTo() ?? 'No client').' · bill total '.Ledger::money($i->total()),
+                'date' => $i->due_date,
+                'amount' => $i->balance(),
+                'direction' => 'in',
+                'url' => route('invoices.show', $i),
+                'action' => null,
+                'action_label' => null,
+            ]));
+
         return $items->sortBy(fn ($i) => $i['date']->timestamp)->values();
+    }
+
+    /** Unpaid balance across all sent bills. */
+    public function outstanding(): float
+    {
+        return round(Invoice::open()->with(['items', 'payments'])->get()->sum(fn (Invoice $i) => $i->balance()), 2);
+    }
+
+    public function personalSpending(Carbon $from, Carbon $to): float
+    {
+        return (float) PersonalExpense::whereBetween('date', [$from, $to])->sum('amount');
     }
 
     /**

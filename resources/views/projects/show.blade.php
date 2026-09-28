@@ -6,6 +6,7 @@
         @endif
         <a class="btn" href="{{ route('transactions.create', ['type' => 'income', 'project' => $project->id, 'category' => $project->type === 'client' ? 'build_fee' : 'ad_revenue']) }}"><x-icon name="plus"/> Income</a>
         <a class="btn" href="{{ route('transactions.create', ['type' => 'expense', 'project' => $project->id]) }}"><x-icon name="plus"/> Expense</a>
+        <a class="btn" href="{{ route('invoices.create', ['project' => $project->id]) }}"><x-icon name="receipt"/> Create bill</a>
         <a class="btn" href="{{ route('projects.edit', $project) }}"><x-icon name="edit"/> Edit</a>
     </x-slot:actions>
 
@@ -15,6 +16,41 @@
         <x-stat label="Spent on project" :value="money($spent)" tone="out"/>
         <x-stat label="My net" :value="money($net)" :tone="$net >= 0 ? 'in' : 'out'"/>
     </div>
+
+    @if ($project->type === 'client' || $billing['billed'] > 0 || $billing['quoted'] > 0)
+        <div class="card">
+            <div class="card-head">
+                <h2>Client billing</h2>
+                <span style="display:flex;gap:6px;flex-wrap:wrap">
+                    <a class="btn btn-sm btn-primary" href="{{ route('invoices.create', ['project' => $project->id, 'final' => 1]) }}"><x-icon name="receipt"/> Final bill</a>
+                    <a class="btn btn-sm" href="{{ route('invoices.create', ['project' => $project->id]) }}"><x-icon name="plus"/> Bill</a>
+                </span>
+            </div>
+            <div class="billing-strip">
+                <div><small>Quoted / agreed</small><strong class="num">{{ money($billing['quoted']) }}</strong></div>
+                <div><small>Billed</small><strong class="num">{{ money($billing['billed']) }}</strong></div>
+                <div><small>Client paid</small><strong class="num in">{{ money($billing['received']) }}</strong></div>
+                <div><small>Balance due</small><strong class="num {{ $billing['balance'] > 0 ? 'out' : 'in' }}">{{ money($billing['balance']) }}</strong></div>
+            </div>
+            @if ($billing['billed'] > 0)
+                <div class="meter" style="margin:0 16px 14px"><span class="m-in" style="width: {{ min(100, round($billing['received'] / $billing['billed'] * 100, 1)) }}%"></span></div>
+            @endif
+            <ul class="list">
+                @forelse ($project->invoices as $inv)
+                    <li>
+                        <div class="grow">
+                            <a class="title" href="{{ route('invoices.show', $inv) }}">{{ $inv->number }} · {{ $inv->title ?: 'Bill' }}</a>
+                            <small>{{ $inv->issue_date->format('d M Y') }} · total {{ money($inv->total()) }} · paid {{ money($inv->paid()) }}</small>
+                        </div>
+                        <span class="badge {{ $inv->stateBadge() }}">{{ $inv->stateLabel() }}</span>
+                        <strong class="num {{ $inv->balance() > 0 ? 'out' : 'in' }}">{{ money($inv->balance()) }}</strong>
+                    </li>
+                @empty
+                    <li class="muted">No bills yet. Use <strong>Final bill</strong> to bill the agreed amount; advances you already recorded can be linked to it.</li>
+                @endforelse
+            </ul>
+        </div>
+    @endif
 
     <div class="grid grid-main">
         <div class="card">

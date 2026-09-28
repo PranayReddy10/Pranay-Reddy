@@ -68,3 +68,72 @@
         sync();
     }
 })();
+
+(() => {
+    // ----- Copy share link / native share -----
+    document.querySelectorAll('[data-copy]').forEach((btn) =>
+        btn.addEventListener('click', async () => {
+            const input = btn.parentElement.querySelector('[data-copy-source]');
+            try { await navigator.clipboard.writeText(input.value); } catch (_) { input.select(); document.execCommand('copy'); }
+            btn.textContent = 'Copied!';
+            setTimeout(() => (btn.textContent = 'Copy'), 1500);
+        })
+    );
+    document.querySelectorAll('[data-share]').forEach((btn) => {
+        if (!navigator.share) return;
+        btn.hidden = false;
+        btn.addEventListener('click', () =>
+            navigator.share({ title: btn.dataset.title, text: btn.dataset.text, url: btn.dataset.url }).catch(() => {})
+        );
+    });
+
+    // ----- Bill editor: line items and live total -----
+    const form = document.querySelector('[data-invoice-form]');
+    if (!form) return;
+
+    const list = form.querySelector('[data-items]');
+    const currency = window.LEDGER_CURRENCY || '₹';
+    const fmt = (n) => currency + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const num = (el) => parseFloat(el?.value) || 0;
+
+    const renumber = () => list.querySelectorAll('[data-item]').forEach((row, i) =>
+        row.querySelectorAll('input').forEach((input) => (input.name = input.name.replace(/items\[\d+\]/, `items[${i}]`)))
+    );
+
+    const recalc = () => {
+        let subtotal = 0;
+        list.querySelectorAll('[data-item]').forEach((row) => {
+            const line = num(row.querySelector('[data-qty]')) * num(row.querySelector('[data-rate]'));
+            row.querySelector('[data-line]').textContent = fmt(line);
+            subtotal += line;
+        });
+        const taxable = Math.max(subtotal - num(form.querySelector('[data-discount]')), 0);
+        form.querySelector('[data-total]').textContent = fmt(taxable + taxable * num(form.querySelector('[data-tax]')) / 100);
+    };
+
+    form.querySelector('[data-add-item]').addEventListener('click', () => {
+        const rows = list.querySelectorAll('[data-item]');
+        const row = rows[rows.length - 1].cloneNode(true);
+        row.querySelectorAll('input').forEach((input) => (input.value = input.hasAttribute('data-qty') ? '1' : ''));
+        list.appendChild(row);
+        renumber();
+        recalc();
+        row.querySelector('input').focus();
+    });
+
+    list.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-remove]');
+        if (!btn) return;
+        const rows = list.querySelectorAll('[data-item]');
+        if (rows.length === 1) {
+            rows[0].querySelectorAll('input').forEach((input) => (input.value = input.hasAttribute('data-qty') ? '1' : ''));
+        } else {
+            btn.closest('[data-item]').remove();
+            renumber();
+        }
+        recalc();
+    });
+
+    form.addEventListener('input', recalc);
+    recalc();
+})();

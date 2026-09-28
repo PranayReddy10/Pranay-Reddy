@@ -2,6 +2,10 @@
 
 namespace App\Support;
 
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
@@ -76,5 +80,31 @@ class Ledger
             $days <= config('ledger.due_soon_days') => ['soon', "in {$days}d"],
             default => ['ok', "in {$days}d"],
         };
+    }
+
+    /** UPI deep link for "pay this bill" (works in GPay, PhonePe, Paytm…). */
+    public static function upiLink(?string $upiId, ?string $payee, float $amount, string $note): ?string
+    {
+        if (blank($upiId)) {
+            return null;
+        }
+
+        return 'upi://pay?'.http_build_query(array_filter([
+            'pa' => $upiId,
+            'pn' => $payee,
+            'am' => $amount > 0 ? number_format($amount, 2, '.', '') : null,
+            'cu' => 'INR',
+            'tn' => $note,
+        ]), '', '&', PHP_QUERY_RFC3986);
+    }
+
+    public static function qrSvg(string $data, int $size = 180): string
+    {
+        $renderer = new ImageRenderer(
+            new RendererStyle($size, 1),
+            new SvgImageBackEnd
+        );
+
+        return (new Writer($renderer))->writeString($data);
     }
 }

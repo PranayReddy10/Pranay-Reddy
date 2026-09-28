@@ -53,7 +53,7 @@ class ProjectController extends Controller
 
     public function show(Project $project): View
     {
-        $project->load(['client', 'partner', 'domains.account', 'domains.server']);
+        $project->load(['client', 'partner', 'domains.account', 'domains.server', 'invoices.items', 'invoices.payments']);
         $transactions = $project->transactions()->latest('date')->latest('id')->get();
 
         $income = (float) $transactions->where('type', 'income')->sum('amount');
@@ -68,6 +68,7 @@ class ProjectController extends Controller
             'spent' => $spent,
             'net' => $income - $share - $spent,
             'adRevenue' => (float) $transactions->where('category', 'ad_revenue')->sum('amount'),
+            'billing' => $project->billingSummary(),
         ]);
     }
 

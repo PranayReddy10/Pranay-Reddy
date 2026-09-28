@@ -64,6 +64,40 @@ return [
         'dropped' => 'Dropped',
     ],
 
+    // Personal (non-business) spending.
+    'personal_categories' => [
+        'food' => 'Food & groceries',
+        'dining' => 'Eating out',
+        'rent' => 'Rent / housing',
+        'bills' => 'Bills & utilities',
+        'mobile' => 'Mobile & internet',
+        'travel' => 'Travel & fuel',
+        'shopping' => 'Shopping',
+        'health' => 'Health & medical',
+        'education' => 'Education',
+        'entertainment' => 'Entertainment & subscriptions',
+        'family' => 'Family & gifts',
+        'emi' => 'EMI / loans',
+        'insurance' => 'Insurance',
+        'investment' => 'Savings & investments',
+        'other' => 'Other',
+    ],
+
+    // Business profile fields printed on bills (editable under Settings).
+    'profile_fields' => [
+        'business_name' => 'Business / display name',
+        'owner_name' => 'Your name',
+        'phone' => 'Phone',
+        'email' => 'Email',
+        'website' => 'Website',
+        'address' => 'Address',
+        'gstin' => 'GSTIN (optional)',
+        'upi_id' => 'UPI ID (for "Pay via UPI")',
+        'bank_details' => 'Bank details',
+        'invoice_prefix' => 'Bill number prefix',
+        'invoice_terms' => 'Default notes / terms on bills',
+    ],
+
     'payment_methods' => ['UPI', 'Bank transfer', 'Card', 'Cash', 'PayPal', 'Wallet', 'Other'],
 
 ];

@@ -11,7 +11,7 @@ class Transaction extends Model
 {
     protected $fillable = [
         'date', 'type', 'category', 'amount', 'partner_share', 'project_id', 'client_id',
-        'partner_id', 'account_id', 'domain_id', 'server_id', 'payment_method', 'reference', 'description',
+        'partner_id', 'account_id', 'domain_id', 'server_id', 'invoice_id', 'payment_method', 'reference', 'description',
     ];
 
     protected function casts(): array
@@ -51,6 +51,11 @@ class Transaction extends Model
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
     }
 
     public function scopeIncome(Builder $query): void

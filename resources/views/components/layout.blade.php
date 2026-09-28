@@ -24,6 +24,11 @@
         ],
         'Money' => [
             ['transactions.index', 'Transactions', 'list', 'transactions.*'],
+            ['invoices.index', 'Bills', 'receipt', 'invoices.*'],
+        ],
+        'Personal' => [
+            ['personal.index', 'Personal spending', 'wallet', 'personal.*'],
+            ['settings', 'Settings', 'settings', 'settings'],
         ],
     ];
 @endphp
@@ -72,7 +77,7 @@
     <a href="{{ route('dashboard') }}" @class(['active' => request()->routeIs('dashboard')])><x-icon name="home"/>Home</a>
     <a href="{{ route('renewals') }}" @class(['active' => request()->routeIs('renewals')])><x-icon name="calendar"/>Dues</a>
     <a href="{{ route('transactions.create') }}" class="fab"><x-icon name="plus"/>Add</a>
-    <a href="{{ route('projects.index') }}" @class(['active' => request()->routeIs('projects.*')])><x-icon name="folder"/>Projects</a>
+    <a href="{{ route('personal.index') }}" @class(['active' => request()->routeIs('personal.*')])><x-icon name="wallet"/>Personal</a>
     <a href="{{ route('reports') }}" @class(['active' => request()->routeIs('reports')])><x-icon name="chart"/>Reports</a>
 </nav>
 

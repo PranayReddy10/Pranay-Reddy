@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\Invoice;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -36,10 +37,13 @@ class ClientController extends Controller
     public function show(Client $client): View
     {
         $client->load(['projects.domains', 'transactions' => fn ($q) => $q->with('project')->latest('date')->limit(50)]);
+        $invoices = Invoice::with(['items', 'payments'])->where('client_id', $client->id)->latest('issue_date')->get();
 
         return view('clients.show', [
             'client' => $client,
             'totalPaid' => (float) $client->transactions()->where('type', 'income')->sum('amount'),
+            'invoices' => $invoices,
+            'owed' => $invoices->sum(fn ($i) => in_array($i->status, ['draft', 'cancelled'], true) ? 0 : $i->balance()),
         ]);
     }
 

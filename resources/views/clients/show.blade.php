@@ -6,7 +6,7 @@
 
     <div class="grid grid-3">
         <x-stat label="Total paid" :value="money($totalPaid)" tone="in"/>
-        <x-stat label="Projects" :value="$client->projects->count()"/>
+        <x-stat label="Balance owed on bills" :value="money($owed)" :tone="$owed > 0 ? 'out' : null"/>
         <x-stat label="Recurring / year" :value="money($client->projects->where('status', 'active')->sum(fn ($p) => $p->yearlyBilling()))" tone="in"/>
     </div>
 
@@ -26,6 +26,19 @@
                     </dl>
                     @if ($client->notes)<p style="white-space:pre-line;margin-bottom:0">{{ $client->notes }}</p>@endif
                 </div>
+            </div>
+            <div class="card">
+                <div class="card-head"><h2>Bills</h2><a class="btn btn-sm" href="{{ route('invoices.create', ['client' => $client->id]) }}"><x-icon name="plus"/> Bill</a></div>
+                <ul class="list">
+                    @forelse ($invoices as $inv)
+                        <li>
+                            <div class="grow"><a class="title" href="{{ route('invoices.show', $inv) }}">{{ $inv->number }}</a><small>{{ $inv->issue_date->format('d M Y') }} · {{ money($inv->total()) }}</small></div>
+                            <span class="badge {{ $inv->stateBadge() }}">{{ $inv->stateLabel() }}</span>
+                        </li>
+                    @empty
+                        <li class="muted">No bills.</li>
+                    @endforelse
+                </ul>
             </div>
             <div class="card">
                 <div class="card-head"><h2>Projects</h2></div>
