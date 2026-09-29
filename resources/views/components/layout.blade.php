@@ -50,6 +50,11 @@
             </nav>
         @endforeach
         <div class="sidebar-foot">
+            <div class="theme-switch" role="group" aria-label="Theme">
+                <button type="button" data-theme-choice="auto" aria-pressed="true"><x-icon name="monitor"/> Auto</button>
+                <button type="button" data-theme-choice="light" aria-pressed="false"><x-icon name="sun"/> Light</button>
+                <button type="button" data-theme-choice="dark" aria-pressed="false"><x-icon name="moon"/> Dark</button>
+            </div>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"><x-icon name="logout"/> Sign out</button>

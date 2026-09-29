@@ -1,5 +1,5 @@
 /* DevLedger service worker: offline shell + last-seen pages. */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const STATIC_CACHE = `devledger-static-${VERSION}`;
 const PAGE_CACHE = `devledger-pages-${VERSION}`;
 const PRECACHE = [
@@ -59,11 +59,11 @@ self.addEventListener('fetch', (event) => {
     if (/\.(css|js|png|svg|webmanifest|woff2?)$/.test(url.pathname)) {
         event.respondWith(
             caches.open(STATIC_CACHE).then((cache) =>
-                cache.match(request, { ignoreSearch: true }).then((hit) => {
+                cache.match(request).then((hit) => {
                     const network = fetch(request).then((response) => {
                         if (response.ok) cache.put(request, response.clone());
                         return response;
-                    }).catch(() => hit);
+                    }).catch(() => hit || cache.match(request, { ignoreSearch: true }));
                     return hit || network;
                 })
             )
