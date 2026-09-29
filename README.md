@@ -60,6 +60,32 @@ Categories, billing cycles, account types and payment methods are in `config/led
 - Signing out clears the pages cached on the device.
 - Home-screen shortcuts: *Add expense*, *Add income* and *Renewals & dues*.
 
+## Deploying on Hostinger (shared hosting)
+
+Keep the project **outside** `public_html`. Only its `public/` folder may be reachable from the web, otherwise `.env` and the SQLite database can be downloaded. Serve the app from its own subdomain, because the PWA needs to sit at the root of a domain.
+
+```bash
+# 1. Move the project out of the web folder
+cd ~/domains/madeforu.co.in
+mv public_html/Pranay-Reddy ./Pranay-Reddy
+
+# 2. In hPanel → Domains → Subdomains, create e.g. "ledger" (folder: public_html/ledger)
+#    then swap that folder for a link to the app's public/ directory:
+ls -la public_html/ledger          # should be empty or only Hostinger's default page
+rm -rf public_html/ledger
+ln -s ~/domains/madeforu.co.in/Pranay-Reddy/public public_html/ledger
+
+# 3. Configure and cache
+cd ~/domains/madeforu.co.in/Pranay-Reddy
+nano .env                          # APP_URL=https://ledger.madeforu.co.in, APP_ENV=production, APP_DEBUG=false
+php artisan migrate --force
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+```
+
+Turn on SSL for the subdomain in hPanel → Security → SSL. In hPanel → Advanced → PHP Configuration, set PHP to 8.3 or newer.
+
+To update later: `git pull origin main`, then `composer install --no-dev -o`, `php artisan migrate --force` and `php artisan config:cache`.
+
 ## Deploying on shared hosting / VPS
 
 1. Point the document root to `public/`.
