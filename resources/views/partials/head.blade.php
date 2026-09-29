@@ -5,14 +5,31 @@
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0c10" media="(prefers-color-scheme: dark)">
 <script>
-    {{-- Apply the saved theme before first paint to avoid a flash. --}}
-    try {
-        var t = localStorage.getItem('theme');
-        if (t === 'light' || t === 'dark') {
-            document.documentElement.dataset.theme = t;
-            document.querySelectorAll('meta[name=theme-color]').forEach(function (m) { m.content = t === 'dark' ? '#0a0c10' : '#ffffff'; });
+    {{-- Theme (auto / light / dark): applied before first paint, remembered per device. --}}
+    (function () {
+        var root = document.documentElement;
+        var media = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+        function saved() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
+        function apply(choice) {
+            if (choice === 'light' || choice === 'dark') root.setAttribute('data-theme', choice);
+            else { root.removeAttribute('data-theme'); choice = 'auto'; }
+            var dark = choice === 'dark' || (choice === 'auto' && media && media.matches);
+            document.querySelectorAll('meta[name=theme-color]').forEach(function (m) { m.content = dark ? '#0a0c10' : '#ffffff'; });
+            document.querySelectorAll('[data-theme-choice]').forEach(function (b) {
+                b.setAttribute('aria-pressed', String(b.getAttribute('data-theme-choice') === choice));
+            });
         }
-    } catch (e) {}
+        apply(saved());
+        document.addEventListener('DOMContentLoaded', function () { apply(saved()); });
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest && e.target.closest('[data-theme-choice]');
+            if (!btn) return;
+            var choice = btn.getAttribute('data-theme-choice');
+            try { choice === 'auto' ? localStorage.removeItem('theme') : localStorage.setItem('theme', choice); } catch (err) {}
+            apply(choice);
+        });
+        if (media && media.addEventListener) media.addEventListener('change', function () { if (!saved()) apply('auto'); });
+    })();
 </script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">

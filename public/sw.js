@@ -1,5 +1,5 @@
 /* DevLedger service worker: offline shell + last-seen pages. */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const STATIC_CACHE = `devledger-static-${VERSION}`;
 const PAGE_CACHE = `devledger-pages-${VERSION}`;
 const PRECACHE = [

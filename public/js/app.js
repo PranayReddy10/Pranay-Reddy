@@ -4,34 +4,6 @@
         el.addEventListener('click', () => document.body.classList.toggle('nav-open'))
     );
 
-    // ----- Theme: auto (follow device) / light / dark, remembered per device -----
-    const applyTheme = (choice) => {
-        const root = document.documentElement;
-        if (choice === 'light' || choice === 'dark') root.dataset.theme = choice;
-        else delete root.dataset.theme;
-
-        const dark = choice === 'dark' || (choice !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
-        document.querySelectorAll('meta[name=theme-color]').forEach((m) => (m.content = dark ? '#0a0c10' : '#ffffff'));
-        document.querySelectorAll('[data-theme-choice]').forEach((b) =>
-            b.setAttribute('aria-pressed', String(b.dataset.themeChoice === (choice || 'auto')))
-        );
-    };
-    let savedTheme = null;
-    try { savedTheme = localStorage.getItem('theme'); } catch (_) {}
-    applyTheme(savedTheme || 'auto');
-    document.querySelectorAll('[data-theme-choice]').forEach((btn) =>
-        btn.addEventListener('click', () => {
-            const choice = btn.dataset.themeChoice;
-            try { choice === 'auto' ? localStorage.removeItem('theme') : localStorage.setItem('theme', choice); } catch (_) {}
-            applyTheme(choice);
-        })
-    );
-    matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
-        let c = null;
-        try { c = localStorage.getItem('theme'); } catch (_) {}
-        if (!c) applyTheme('auto');
-    });
-
     // ----- Service worker -----
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
