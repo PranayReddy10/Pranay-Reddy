@@ -78,6 +78,8 @@
     </main>
 </div>
 
+@stack('detached-forms')
+
 <nav class="bottom-nav">
     <a href="{{ route('dashboard') }}" @class(['active' => request()->routeIs('dashboard')])><x-icon name="home"/>Home</a>
     <a href="{{ route('renewals') }}" @class(['active' => request()->routeIs('renewals')])><x-icon name="calendar"/>Dues</a>
