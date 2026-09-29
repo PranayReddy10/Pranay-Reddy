@@ -97,19 +97,27 @@ class DomainController extends Controller
         return redirect()->route('domains.index')->with('status', 'Domain deleted.');
     }
 
-    /** Mark a domain renewed: extend expiry and (if I pay) book the cost. */
+    /**
+     * Mark a domain renewed and (if I pay) book the cost. The new expiry is either the exact
+     * date given, or, for one-tap buttons, the current expiry plus N years.
+     */
     public function renew(Request $request, Domain $domain): RedirectResponse
     {
         $data = $request->validate([
             'years' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'new_expires_on' => ['nullable', 'date'],
             'amount' => ['nullable', 'numeric', 'min:0'],
             'date' => ['nullable', 'date'],
             'payment_method' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $years = (int) ($data['years'] ?? 1);
+        $base = $domain->expires_on ?? Carbon::today();
+        $newExpiry = isset($data['new_expires_on'])
+            ? Carbon::parse($data['new_expires_on'])
+            : $base->copy()->addYearsNoOverflow((int) ($data['years'] ?? 1));
+        $years = max(1, (int) round($base->diffInMonths($newExpiry) / 12));
 
-        DB::transaction(function () use ($domain, $data, $years) {
+        DB::transaction(function () use ($domain, $data, $years, $newExpiry) {
             $amount = $data['amount'] ?? $domain->renewal_cost * $years;
 
             if ($domain->paid_by === 'me' && $amount > 0) {
@@ -126,8 +134,7 @@ class DomainController extends Controller
                 ]);
             }
 
-            $base = $domain->expires_on ?? Carbon::today();
-            $domain->update(['expires_on' => $base->copy()->addYearsNoOverflow($years), 'status' => 'active']);
+            $domain->update(['expires_on' => $newExpiry, 'status' => 'active']);
         });
 
         return back()->with('status', "{$domain->name} renewed until {$domain->expires_on->format('d M Y')}.");

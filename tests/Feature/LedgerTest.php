@@ -71,6 +71,28 @@ class LedgerTest extends TestCase
         $this->assertDatabaseHas('transactions', ['domain_id' => $domain->id, 'account_id' => $account->id, 'category' => 'domain', 'amount' => 1400]);
     }
 
+    public function test_renewal_with_an_explicit_expiry_saves_that_exact_date(): void
+    {
+        $domain = Domain::create(['name' => 'exact.in', 'renewal_cost' => 700, 'expires_on' => '2026-10-10']);
+
+        $this->actingAs($this->user)->post(route('domains.renew', $domain), ['new_expires_on' => '2027-12-31', 'amount' => 1400]);
+
+        $this->assertSame('2027-12-31', $domain->fresh()->expires_on->toDateString());
+        $this->assertDatabaseHas('transactions', ['domain_id' => $domain->id, 'amount' => 1400]);
+    }
+
+    public function test_editing_a_domain_keeps_the_expiry_date_as_typed(): void
+    {
+        $domain = Domain::create(['name' => 'typed.in', 'renewal_cost' => 700, 'expires_on' => '2026-10-10']);
+
+        $this->actingAs($this->user)->put(route('domains.update', $domain), [
+            'name' => 'typed.in', 'expires_on' => '2026-12-15', 'renewal_cost' => 700, 'paid_by' => 'me', 'status' => 'active',
+        ])->assertRedirect();
+
+        $this->assertSame('2026-12-15', $domain->fresh()->expires_on->toDateString());
+        $this->assertSame(0, \App\Models\Transaction::count());
+    }
+
     public function test_client_paid_domain_renewal_books_no_expense(): void
     {
         $domain = Domain::create(['name' => 'client.com', 'renewal_cost' => 900, 'paid_by' => 'client', 'expires_on' => '2026-10-01']);
